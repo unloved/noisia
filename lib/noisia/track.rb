@@ -7,32 +7,35 @@ module Noisia
     end
 
     included do
-      DEFAULT_DENSITY=30
 
-      before_validation :check_regenerate_fingerprint
+      before_validation :check_generate_fingerprint
       after_save :store_elastic
       after_destroy :destroy_elastic
 
       validates :file, :presence => true
 
-      def check_regenerate_fingerprint
-        regenerate_fingerprint if self.new_record? or file_changed?
-      end
+      attr_accessor :fingerprint
 
-      def regenerate_fingerprint
-        self.fingerprint = Noisia::Fingerprint.new(file.path, :add, DEFAULT_DENSITY).fingerprint
-        @update_elastic = true
+      def check_generate_fingerprint
+        if self.new_record? or file_changed?
+          self.fingerprint = Noisia::Fingerprint.new(file.path, :add, default_density).build
+          @store_elastic = true
+        end
       end
 
       def store_elastic
-        if @update_elastic
+        if @store_elastic
           Noisia::Elastic.store_track(self)
         end
-        @update_elastic = false
+        @store_elastic = false
       end
 
       def destroy_elastic
         Noisia::Elastic.destroy_track(self)
+      end
+
+      def default_density
+        30
       end
     end
   end

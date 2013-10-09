@@ -30,9 +30,9 @@ module Noisia
     end
 
     def self.search fingerprint
-      Tire.search index_name do
+      Tire.search index_name, {:load=>false} do
         query do
-          terms :fingerprint, fingerprint
+          terms :fingerprint, fingerprint.split(' ').uniq
         end
       end.results
     end
