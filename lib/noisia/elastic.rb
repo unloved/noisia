@@ -34,7 +34,7 @@ module Noisia
         query do
           terms :fingerprint, fingerprint.split(' ').uniq
         end
-      end.results
+      end.results.map{|r| [r.id, r._score]}
     end
 
     def to_indexed_json
